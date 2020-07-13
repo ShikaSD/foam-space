@@ -53,4 +53,7 @@ class CounterBloc : Bloc<CounterEvent, Int> {
       is Decrement -> Observable.just(state.value - 1)
     }
 }
+
+bloc.accept(Increment)
+bloc.accept(Decrement)
 ```
