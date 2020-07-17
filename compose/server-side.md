@@ -1,5 +1,7 @@
 # Compose on server side
 
+[Repository](https://github.com/ShikaSD/compose-server-side)
+
 Connecting node changes on server to js nodes through websocket.
 The project is pretty much barebone currently, we'll see how it goes.
 
