@@ -9,7 +9,9 @@ Project is split into multiple phases:
   - [x] Establish base behaviours of events / nodes and connection to server
   - [x] Separate library and sandbox
   - [x] Pass values with events to enable behaviours like input changes
-  - [ ] Pass attribute updates as a result of those events
-  - [ ] Enable passing css along with composable components
-  - [ ] Standardise API to make it more flexible
+  - [x] Pass attribute updates as a result of those events
+  - [x] Enable passing css along with composable components
+  - [x] Standardise API to make it more flexible
+  - [ ] Cool demo lol
+  - [ ] Article
 
