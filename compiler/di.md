@@ -1,7 +1,42 @@
 # Kotlin compiler plugin DI proposal
 
-Dagger is stupid, we should do better!
-Koin API sets actually quite good example of how we could do that.
+Following example of Dagger of compile-time safe DI.
+Goals:
+- Better syntax
+- More possibilities
+- Less complexity
+
+## Definition
+DI container can be expressed in terms of types it provides.
+Considering container that can provide `Int`, `String` and `(Int) -> String`, we can express it as `Container<Int, String, (Int) -> String>`.
+Order of type parameters is not important, e.g. `Container<A, B>` == `Container<B, A>`.
+
+Containers are created dynamically from modules, which define parts of a graph. User can control which types and values are accessible + scoping of these values.
+`Container<A, B>` can be created from `ModuleA exposing A` and `ModuleB exposing B`. Essentially, `Container<A, B>` is `sum(ModuleA, ModuleB)`.
+
+To retrieve dependency from container, one can use `Container.get<T>()` function. This allows to use different containers which can provide this type.
+```kotlin
+fun foo(container: Container) {
+  container.get<Bar>()
+}
+
+val container1 // Container<Int, Bar>
+val container2 // Container<String, Bar>
+
+foo(container1) // works, container1 can provide Bar
+foo(container2) // works, container2 can provide Bar as well
+```
+
+It can also be extended further to allow assigning different containers to the same variable, where resulting type will be an intersection of others:
+```kotlin
+val container1 // Container<Int, Bar>
+val container2 // Container<String, Bar>
+val container3 = if (something) container1 else container2 // Container<Bar>
+```
+**TODO:** Support unsafe cast
+**TODO:** Support referencing container type
+
+## Syntax example
 
 ```kotlin
 /**
@@ -12,9 +47,17 @@ val myModule = module {
   single { SomeOtherDependency() }
 }
 
+// or
+class MyModule(val value: String) : Module {
+  val myDependency: MyDependency = MyDependency()
+  val someOtherDependency: SomeOtherDependency by lazy { SomeOtherDependency(value) }
+  val recreatedDep: RecreatedDependency get() = RecreatedDependency(myDependency)
+  private val invisibleDep: ...
+}
+
 /**
  * Component provides complete graph
- * If module is complete it probably can be a component as well?
+ * TODO: If module is complete it probably can be a component as well?
  */
 val myComponent = component(module1, module2, instance(someInstance))
 
@@ -26,31 +69,34 @@ myComponent.invoke(::functionReference)
 myComponent.get()
 ```
 
-## On the backend
+## Implementation
+Compiler plugin yo
+
+Every field and property of type `Container` should keep associated types with it. There's no need to implement it as actual generic type, every value can bring annotations with it.
 ```kotlin
-// Each call which has a reference to some component, will be annotated with dependencies it requires
-fun call(dep: Container)
+annotation class Provides(vararg types: KClass)
 
-// Converted to:
-@Requires(paramName="dep", types=[KClass])
-fun call(dep: Container)
+fun foo(container: @Provides(Bar::class) Container) {
+  container.get<Bar>()
+}
 
-/**
- * Module can be converted to realized class
- */
+val container1: @Provides(Int::class, Bar::class) Container
+val container2: @Provides(String::class, Bar::class) Container>
+```
+
+Module definitions made with DSL need to be expanded to classes similar to class syntax.
+```kotlin
 val myModule = module {
   provide { MyDependency() }
-  single { value -> SomeOtherDependency(value) }
+  single { SomeOtherDependency() }
 }
 
-@Module
-class MyModule {
-  fun myDependency(): MyDependency = MyDependency()
-  fun someOtherDependency(value: String): SomeOtherDependency = single(SomeOtherDependency(value))
+// expanded to
+val myModule = MyModule()
+class MyModule : Module {
+  val myDependency: MyDependency get() = MyDependency()
+  val someOtherDependency: SomeOtherDependency by lazy { SomeOtherDependency() }
 }
-
-/**
- * Component can be converted to realized class as well
- */
-val myComponent = component(module1, module2, instance(someInstance))
 ```
+
+**TODO:** implementation of containers (combining interfaces based on modules?)
