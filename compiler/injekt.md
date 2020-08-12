@@ -97,7 +97,7 @@ class MyUserStorageHolder {
     }
     
     @Reader
-    fun <R> runUserReader(block: @Reader () -> R): R = runChildReader(
+    fun <R> inUserScope(block: @Reader () -> R): R = runChildReader(
         userStorage!!, user, block = block
     )
     
