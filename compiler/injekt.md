@@ -169,7 +169,7 @@ fun invoke(): Foo {
 
 Don't have much time to research here, but seems like it generates interfaces with `given()` types used inside the function. Obvious drawback is a number of classes generated (dexcount). It provides quite a huge in a big project.
 I don't think that the generated context interfaces are a problem. E.g. Dagger generates a Factory for each binding.
-A huge is the amount of @Index classes are generated but it's way faster to look up a single package instead of scanning the whole classpath.
+A huge problem is the amount of @Index classes that are generated, but it's way faster to look up a single package instead of scanning the whole classpath.
 But Proguard or R8 should strip out those @Index class just fine
 
 **NOTE**: I still like it :)
